@@ -1,7 +1,8 @@
 import streamlit as st
 from moviepy.editor import VideoFileClip
 import os
-
+from io import BytesIO
+import zipfile
 
 def split_and_save_video(video_file, time_frame):
     # Get the file extension
@@ -20,17 +21,20 @@ def split_and_save_video(video_file, time_frame):
 
     # Save video clips locally and provide download links
     download_links = []
-    for i, video_clip in enumerate(clips):
-        output_path = f"output_clip_{i + 1}.mp4"
-        video_clip.write_videofile(output_path)
-        download_links.append(output_path)
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        for i, video_clip in enumerate(clips):
+            output_path = f"output_clip_{i + 1}.mp4"
+            video_clip.write_videofile(output_path)
+            download_links.append(output_path)
+            zip_file.write(output_path)
 
-    # Close the VideoFileClip object
+    zip_buffer.seek(0)
     clip.close()
     # Delete the temporary video file
     os.remove(temp_video_path)
 
-    return download_links
+    return zip_buffer
 
 
 def main():
@@ -39,11 +43,14 @@ def main():
     time_frame = st.number_input("Time Frame (in seconds)", min_value=1, value=3)
     if st.button("Split Video"):
         if uploaded_file is not None:
-            download_links = split_and_save_video(uploaded_file, time_frame)
-            st.success("Video has been split. Click below to download:")
-            for i, link in enumerate(download_links):
-                with st.expander(f"Download Segment {i + 1}"):
-                    st.markdown(f"[Download {link}](sandbox:/{link})", unsafe_allow_html=True)
+            zip_buffer = split_and_save_video(uploaded_file, time_frame)
+            st.success("Video has been split. Click below to download all clips.")
+            st.download_button(
+                label="Download All Clips",
+                data=zip_buffer,
+                file_name='video_clips.zip',
+                mime='application/zip'
+            )
         else:
             st.error("Please upload a video file.")
 
