@@ -25,12 +25,8 @@ def split_and_save_video(video_file, time_frame):
         video_clip.write_videofile(output_path)
         download_links.append(output_path)
 
-        # Display download link for each segment
-        st.success(f"Segment {i + 1} has been split. [Download {output_path}](sandbox:/{output_path})")
-
     # Close the VideoFileClip object
     clip.close()
-
     # Delete the temporary video file
     os.remove(temp_video_path)
 
@@ -43,10 +39,13 @@ def main():
     time_frame = st.number_input("Time Frame (in seconds)", min_value=1, value=3)
     if st.button("Split Video"):
         if uploaded_file is not None:
-            split_and_save_video(uploaded_file, time_frame)
+            download_links = split_and_save_video(uploaded_file, time_frame)
+            st.success("Video has been split. Click below to download:")
+            for i, link in enumerate(download_links):
+                with st.expander(f"Download Segment {i + 1}"):
+                    st.markdown(f"[Download {link}](sandbox:/{link})", unsafe_allow_html=True)
         else:
             st.error("Please upload a video file.")
-
 
 if __name__ == "__main__":
     main()
