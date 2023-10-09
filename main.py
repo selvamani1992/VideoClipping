@@ -4,6 +4,11 @@ import os
 from io import BytesIO
 import zipfile
 
+st.set_page_config(page_title="Video Splitter",
+                   page_icon="",
+                   layout="wide",
+                   initial_sidebar_state="expanded")
+
 def split_and_save_video(video_file, time_frame):
     # Get the file extension
     file_extension = video_file.name.split('.')[-1]
@@ -39,6 +44,12 @@ def split_and_save_video(video_file, time_frame):
 
 def main():
     st.title("Video Splitter")
+    st.markdown("<p style='color: white;'><b>This Streamlit app allows users to upload a video file and split it into "
+                "smaller clips based on a specified time frame. Users can input the time frame in seconds and click "
+                "the 'Split Video' button. The app then processes the uploaded video, splits it into segments, "
+                "saves the segments as individual video files, and compresses them into a ZIP archive. "
+                "Users can download all the split video clips at once by clicking the 'Download All Clips button'. "
+                "</b></p><br>",unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload a video file", type=["mp4"])
     time_frame = st.number_input("Time Frame (in seconds)", min_value=1, value=3)
     if st.button("Split Video"):
